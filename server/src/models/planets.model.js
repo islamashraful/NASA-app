@@ -14,8 +14,6 @@ function isHabitablePlanet(planet) {
 
 const planets = [];
 
-console.log(__dirname);
-
 function loadPlanetsData() {
   return new Promise((resolve, reject) => {
     fs.createReadStream(
@@ -43,4 +41,11 @@ function loadPlanetsData() {
   });
 }
 
-module.exports = { planets, loadPlanetsData };
+function getAllPlanets() {
+  return planets;
+}
+
+module.exports = {
+  getAllPlanets,
+  loadPlanetsData,
+};
