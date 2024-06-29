@@ -5,11 +5,11 @@ const {
   abortLaunchById,
 } = require("../../models/launches.model");
 
-function httpGetAllLaunches(req, res) {
-  res.status(200).json(getAllLaunches());
+async function httpGetAllLaunches(req, res) {
+  res.status(200).json(await getAllLaunches());
 }
 
-function httpAddNewLaunch(req, res) {
+async function httpAddNewLaunch(req, res) {
   const launch = req.body;
   if (
     !launch.mission ||
@@ -29,7 +29,7 @@ function httpAddNewLaunch(req, res) {
     });
   }
 
-  addNewLaunch(launch);
+  await addNewLaunch(launch);
   res.status(201).json(launch);
 }
 
