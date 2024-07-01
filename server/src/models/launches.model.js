@@ -1,25 +1,12 @@
 const axios = require("axios");
 
-const launchesDriver = require("./launches.mongo");
+const launches = require("./launches.mongo");
 const planets = require("./planets.mongo");
 
 const DEFAULT_FLIGHT_NUMBER = 100;
 
-const launch = {
-  flightNumber: 102,
-  mission: "Kepler Exploration X",
-  rocket: "Explorer IS1",
-  launchDate: new Date("December 27, 2030"),
-  target: "Kepler-442 b",
-  customers: ["ZTM", "NASA"],
-  upcoming: true,
-  success: true,
-};
-
-saveLaunch(launch);
-
 async function saveLaunch(launch) {
-  await launchesDriver.findOneAndUpdate(
+  await launches.findOneAndUpdate(
     {
       flightNumber: launch.flightNumber,
     },
@@ -29,7 +16,7 @@ async function saveLaunch(launch) {
 }
 
 async function getLatestFlightNumber() {
-  const latestLaunch = await launchesDriver.findOne().sort("-flightNumber");
+  const latestLaunch = await launches.findOne().sort("-flightNumber");
   if (!latestLaunch) {
     return DEFAULT_FLIGHT_NUMBER;
   }
@@ -38,7 +25,7 @@ async function getLatestFlightNumber() {
 }
 
 async function getAllLaunches({ skip, limit }) {
-  return await launchesDriver
+  return await launches
     .find({})
     .sort({ flightNumber: 1 })
     .skip(skip)
@@ -63,11 +50,11 @@ async function addNewLaunch(launch) {
 }
 
 async function existsLaunchWithId(launchId) {
-  return await launchesDriver.findOne({ flightNumber: launchId });
+  return await launches.findOne({ flightNumber: launchId });
 }
 
 async function abortLaunchById(launchId) {
-  return await launchesDriver.updateOne(
+  return await launches.updateOne(
     { flightNumber: launchId },
     { success: false, upcoming: false }
   );
@@ -76,7 +63,7 @@ async function abortLaunchById(launchId) {
 const SPACE_X_API_END_POINT = "https://api.spacexdata.com/v4/launches/query";
 
 async function loadLaunchData() {
-  const spaceXData = await launchesDriver.findOne({
+  const spaceXData = await launches.findOne({
     flightNumber: 1,
     rocket: "Falcon 1",
     mission: "FalconSat",
