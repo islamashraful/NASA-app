@@ -37,8 +37,12 @@ async function getLatestFlightNumber() {
   return latestLaunch.flightNumber;
 }
 
-async function getAllLaunches() {
-  return await launchesDriver.find({});
+async function getAllLaunches({ skip, limit }) {
+  return await launchesDriver
+    .find({})
+    .sort({ flightNumber: 1 })
+    .skip(skip)
+    .limit(limit);
 }
 
 async function addNewLaunch(launch) {
