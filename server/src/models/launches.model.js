@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 const launchesDriver = require("./launches.mongo");
 const planets = require("./planets.mongo");
 
@@ -67,9 +69,68 @@ async function abortLaunchById(launchId) {
   );
 }
 
+const SPACE_X_API_END_POINT = "https://api.spacexdata.com/v4/launches/query";
+
+async function loadLaunchData() {
+  const spaceXData = await launchesDriver.findOne({
+    flightNumber: 1,
+    rocket: "Falcon 1",
+    mission: "FalconSat",
+  });
+  if (spaceXData) {
+    console.log("Launches data already exists in database");
+    return;
+  }
+
+  console.log("Loading launches data...");
+  const response = await axios.post(SPACE_X_API_END_POINT, {
+    query: {},
+    options: {
+      pagination: false,
+      populate: [
+        {
+          path: "rocket",
+          select: {
+            name: 1,
+          },
+        },
+        {
+          path: "payloads",
+          select: {
+            customers: 1,
+          },
+        },
+      ],
+    },
+  });
+
+  if (response.status !== 200) {
+    console.log("Problem downloading launch data");
+    throw new Error("Launch data download failed.");
+  }
+
+  const launchDocs = response.data.docs;
+
+  for (let item of launchDocs) {
+    const doc = {
+      flightNumber: item.flight_number,
+      mission: item.name,
+      rocket: item.rocket.name,
+      launchDate: item.date_local,
+      customers: item.payloads.map((p) => p.customers.join(",")),
+      upcoming: item.upcoming,
+      success: item.success,
+    };
+
+    await saveLaunch(doc);
+  }
+  console.log("Finished saving launchs data in database");
+}
+
 module.exports = {
   getAllLaunches,
   addNewLaunch,
+  loadLaunchData,
   existsLaunchWithId,
   abortLaunchById,
 };
